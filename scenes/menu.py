@@ -15,13 +15,13 @@ class Menu:
             mouse_pos = pygame.mouse.get_pos()
             
             if self.show_panel:
-                if ui.button_hover(mouse_pos, 250, 250, 300, 50):
+                if ui.button_hover(mouse_pos, 250, 175, 300, 50):
                     print('Easy selected')
                     return Easy()
-                if ui.button_hover(mouse_pos, 250, 325, 300, 50):
+                if ui.button_hover(mouse_pos, 250, 250, 300, 50):
                     print('Medium selected')
                     return Medium()
-                if ui.button_hover(mouse_pos, 250, 400, 300, 50):
+                if ui.button_hover(mouse_pos, 250, 325, 300, 50):
                     print('Hard selected')
                     return Hard()
             else:
@@ -40,9 +40,9 @@ class Menu:
         screen.fill(ui.PINK)
         
         if self.show_panel:
-            ui.draw_button('Easy', 250, 250, 300, 50, screen, self.font)
-            ui.draw_button('Medium', 250, 325, 300, 50, screen, self.font)
-            ui.draw_button('Hard', 250, 400, 300, 50, screen, self.font)
+            ui.draw_button('Easy', 250, 175, 300, 50, screen, self.font)
+            ui.draw_button('Medium', 250, 250, 300, 50, screen, self.font)
+            ui.draw_button('Hard', 250, 325, 300, 50, screen, self.font)
         else:
             ui.draw_button('Play', 300, 200, 200, 50, screen, self.font)
             ui.draw_button('Quit', 300, 300, 200, 50, screen, self.font)
