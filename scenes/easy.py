@@ -3,7 +3,7 @@ from map import Map
 
 class Easy:
     def __init__(self):
-        self.map = Map(20, 20)
+        self.map = Map(30, 40)
         self.cell_size = 20
         
     def handle_event(self, event):
