@@ -1,7 +1,8 @@
 # generate map pake DFS
 import pygame
-from random import choice
+from random import choice, randrange
 from player import Player 
+from hint import Hint
 
 RES = WIDTH, HEIGHT = 800, 600
 TILE = 50
@@ -10,6 +11,9 @@ cols, rows = WIDTH // TILE, HEIGHT // TILE
 pygame.init()
 sc = pygame.display.set_mode(RES)
 clock = pygame.time.Clock()
+
+hint_timer = 0
+hint_active_duration = 5000 
 
 class Cell:
     def __init__(self, x, y):
@@ -77,7 +81,16 @@ grid_cells = [Cell(col, row) for row in range(rows) for col in range(cols)]
 current_cell = grid_cells[0]
 stack = []
 
-player = Player(0,0,50)
+player = Player(0,0,TILE)
+exit_x, exit_y = randrange(cols), randrange(rows)
+
+while exit_x == 0 and exit_y == 0:  # Ensure exit isn't the starting position
+    exit_x, exit_y = randrange(cols), randrange(rows)
+
+hint_x, hint_y = randrange(cols), randrange(rows)
+while (hint_x, hint_y) in [(0, 0), (exit_x, exit_y)]:  # Exclude player start and exit
+    hint_x, hint_y = randrange(cols), randrange(rows)
+hint = Hint(hint_x, hint_y, TILE)
 
 while True:
     sc.fill(pygame.Color('darkslategray'))
@@ -98,7 +111,27 @@ while True:
     [cell.draw() for cell in grid_cells]
     current_cell.visited = True
     current_cell.draw_current_cell()
+
+    pygame.draw.rect(sc, pygame.Color('green'), (exit_x * TILE + TILE // 4, exit_y * TILE + TILE // 4, TILE // 2, TILE // 2))
+
+    # Draw hint item (drawn before player to ensure player is on top)
+    hint.draw(sc)
+    if hint.active:
+        for hx, hy in hint.path:
+            pygame.draw.rect(sc, pygame.Color(0, 255, 255, 128), (hx * TILE + TILE // 4, hy * TILE + TILE // 4, TILE // 2, TILE // 2))
+
+    if player.x == hint_x and player.y == hint_y:
+        hint.activate(grid_cells, cols, rows, player.x, player.y, exit_x, exit_y)
+        hint_timer = pygame.time.get_ticks()
+
+    # Draw the player last to ensure they are always on top
     player.draw(sc)
+
+    # Check if player reaches the exit
+    if player.x == exit_x and player.y == exit_y:
+        print("You Win!")
+        pygame.time.wait(2000)
+        exit()
     
     next_cell = current_cell.check_neighbors()
     if next_cell:
