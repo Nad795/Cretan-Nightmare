@@ -3,6 +3,7 @@ import pygame
 from random import choice, randrange
 from player import Player 
 from hint import Hint
+from enemy import Enemy
 
 RES = WIDTH, HEIGHT = 800, 600
 TILE = 50
@@ -14,6 +15,11 @@ clock = pygame.time.Clock()
 
 hint_timer = 0
 hint_active_duration = 5000 
+
+enemy = None
+enemy_spawned = False
+enemy_last_move_time = 0  # Timestamp for the enemy's last move
+enemy_move_delay = 500 
 
 class Cell:
     def __init__(self, x, y):
@@ -81,16 +87,24 @@ grid_cells = [Cell(col, row) for row in range(rows) for col in range(cols)]
 current_cell = grid_cells[0]
 stack = []
 
+# player init
 player = Player(0,0,TILE)
-exit_x, exit_y = randrange(cols), randrange(rows)
 
+# exit init
+exit_x, exit_y = randrange(cols), randrange(rows)
 while exit_x == 0 and exit_y == 0:  # Ensure exit isn't the starting position
     exit_x, exit_y = randrange(cols), randrange(rows)
 
+# hint init
 hint_x, hint_y = randrange(cols), randrange(rows)
 while (hint_x, hint_y) in [(0, 0), (exit_x, exit_y)]:  # Exclude player start and exit
     hint_x, hint_y = randrange(cols), randrange(rows)
 hint = Hint(hint_x, hint_y, TILE)
+
+# enemy
+start_time = pygame.time.get_ticks()
+enemy_spawned = False
+enemy = None
 
 while True:
     sc.fill(pygame.Color('darkslategray'))
@@ -126,6 +140,20 @@ while True:
 
     # Draw the player last to ensure they are always on top
     player.draw(sc)
+
+    # enemy logic
+    if not enemy_spawned and pygame.time.get_ticks() - start_time >= 15000:
+        enemy = Enemy(0, 0)  # Spawn the enemy at a random position
+        enemy_spawned = True
+
+    if enemy:
+        enemy.update((player.x, player.y), grid_cells, cols, rows)
+        enemy.draw(sc, TILE)
+
+        if enemy.x == player.x and enemy.y == player.y:
+            print("Game Over!")
+            pygame.time.wait(2000)  # Pause for 2 seconds
+            exit()
 
     # Check if player reaches the exit
     if player.x == exit_x and player.y == exit_y:
