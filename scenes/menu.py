@@ -1,7 +1,6 @@
 import pygame
 import sys
 from scenes.easy import Easy
-from scenes.medium import Medium
 from scenes.hard import Hard
 import ui
 
@@ -18,9 +17,6 @@ class Menu:
                 if ui.button_hover(mouse_pos, 250, 175, 300, 50):
                     print('Easy selected')
                     return Easy()
-                if ui.button_hover(mouse_pos, 250, 250, 300, 50):
-                    print('Medium selected')
-                    return Medium()
                 if ui.button_hover(mouse_pos, 250, 325, 300, 50):
                     print('Hard selected')
                     return Hard()
@@ -41,7 +37,6 @@ class Menu:
         
         if self.show_panel:
             ui.draw_button('Easy', 250, 175, 300, 50, screen, self.font)
-            ui.draw_button('Medium', 250, 250, 300, 50, screen, self.font)
             ui.draw_button('Hard', 250, 325, 300, 50, screen, self.font)
         else:
             ui.draw_button('Play', 300, 200, 200, 50, screen, self.font)
