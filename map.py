@@ -1,6 +1,7 @@
 # generate map pake DFS
 import pygame
 from random import choice
+from player import Player 
 
 RES = WIDTH, HEIGHT = 800, 600
 TILE = 50
@@ -76,16 +77,28 @@ grid_cells = [Cell(col, row) for row in range(rows) for col in range(cols)]
 current_cell = grid_cells[0]
 stack = []
 
+player = Player(0,0,50)
+
 while True:
     sc.fill(pygame.Color('darkslategray'))
     
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             exit()
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_UP:
+                player.move("UP", grid_cells, cols)
+            elif event.key == pygame.K_RIGHT:
+                player.move("RIGHT", grid_cells, cols)
+            elif event.key == pygame.K_DOWN:
+                player.move("DOWN", grid_cells, cols)
+            elif event.key == pygame.K_LEFT:
+                player.move("LEFT", grid_cells, cols)
             
     [cell.draw() for cell in grid_cells]
     current_cell.visited = True
     current_cell.draw_current_cell()
+    player.draw(sc)
     
     next_cell = current_cell.check_neighbors()
     if next_cell:
