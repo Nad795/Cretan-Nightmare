@@ -13,12 +13,12 @@ class Player:
         # Locate current cell
         current_cell = grid_cells[self.x + self.y * cols]
 
-        # Check if the move is valid
+        # Check if the move is valid and move the player
         if direction == "UP" and not current_cell.walls['top']:
             self.y -= 1
-        elif direction == "RIGHT" and not current_cell.walls['right']:
-            self.x += 1
         elif direction == "DOWN" and not current_cell.walls['bottom']:
             self.y += 1
         elif direction == "LEFT" and not current_cell.walls['left']:
             self.x -= 1
+        elif direction == "RIGHT" and not current_cell.walls['right']:
+            self.x += 1

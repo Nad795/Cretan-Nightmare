@@ -1,6 +1,7 @@
 import pygame
 import heapq
 
+# Node untuk algoritma A*
 class Node:
     def __init__(self, x, y, parent=None):
         self.x = x
@@ -13,6 +14,7 @@ class Node:
     def __lt__(self, other):
         return self.f < other.f  # Compare based on f value (for priority queue)
 
+# Algoritma A* untuk mencari jalur
 def a_star(start, goal, grid_cells, cols, rows):
     open_list = []
     closed_list = set()
@@ -58,20 +60,24 @@ def a_star(start, goal, grid_cells, cols, rows):
                     
     return []  # Return an empty path if no path exists
 
+# Kelas untuk Enemy
 class Enemy:
     def __init__(self, x, y):
-        self.x, self.y = x, y
-        self.speed = 100000  # Tiles per second
-        self.path = []
+        self.x = x
+        self.y = y
+        self.speed = 0.1  # Kecepatan musuh dalam tiles per frame
+        self.path = []  # Jalur yang akan dilalui musuh
     
     def update(self, player_position, grid_cells, cols, rows):
         if not self.path or (self.x, self.y) == self.path[0]:
+            # Hitung jalur baru jika tidak ada jalur atau sudah mencapai titik awal jalur
             self.path = a_star((self.x, self.y), player_position, grid_cells, cols, rows)
         
         if self.path:
             next_tile = self.path.pop(0)
             self.x, self.y = next_tile
 
-    def draw(self, sc, TILE):
-        ex, ey = self.x * TILE + TILE // 2, self.y * TILE + TILE // 2
-        pygame.draw.circle(sc, pygame.Color('red'), (ex, ey), TILE // 4)
+    def draw(self, screen, tile_size):
+        # Menggambar musuh sebagai lingkaran merah di grid
+        ex, ey = self.x * tile_size + tile_size // 2, self.y * tile_size + tile_size // 2
+        pygame.draw.circle(screen, pygame.Color('red'), (ex, ey), tile_size // 4)

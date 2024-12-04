@@ -1,174 +1,121 @@
-# generate map pake DFS
 import pygame
-from random import choice, randrange
-from player import Player 
+from random import choice
+from player import Player
 from hint import Hint
-from enemy import Enemy
-
-RES = WIDTH, HEIGHT = 800, 600
-TILE = 50
-cols, rows = WIDTH // TILE, HEIGHT // TILE
-
-pygame.init()
-sc = pygame.display.set_mode(RES)
-clock = pygame.time.Clock()
-
-hint_timer = 0
-hint_active_duration = 5000 
-
-enemy = None
-enemy_spawned = False
-enemy_last_move_time = 0  # Timestamp for the enemy's last move
-enemy_move_delay = 500 
 
 class Cell:
     def __init__(self, x, y):
         self.x, self.y = x, y
         self.walls = {'top': True, 'right': True, 'bottom': True, 'left': True}
         self.visited = False
-        
-    def draw_current_cell(self):
-        x, y = self.x * TILE, self.y * TILE
-        pygame.draw.rect(sc, pygame.Color('saddlebrown'), (x + 2, y + 2, TILE - 2, TILE - 2))
-        
-    def draw(self):
-        x, y = self.x * TILE, self.y * TILE
+
+    def draw(self, screen, cell_size):
+        x, y = self.x * cell_size, self.y * cell_size
         if self.visited:
-            pygame.draw.rect(sc, pygame.Color('black'), (x, y, TILE, TILE))
-            
+            pygame.draw.rect(screen, pygame.Color('black'), (x, y, cell_size, cell_size))
+        
         if self.walls['top']:
-            pygame.draw.line(sc, pygame.Color('darkorange'), (x, y), (x + TILE, y), 2)
+            pygame.draw.line(screen, pygame.Color('darkorange'), (x, y), (x + cell_size, y), 2)
         if self.walls['right']:
-            pygame.draw.line(sc, pygame.Color('darkorange'), (x + TILE, y), (x + TILE, y + TILE), 2)
+            pygame.draw.line(screen, pygame.Color('darkorange'), (x + cell_size, y), (x + cell_size, y + cell_size), 2)
         if self.walls['bottom']:
-            pygame.draw.line(sc, pygame.Color('darkorange'), (x + TILE, y + TILE), (x, y + TILE), 2)
+            pygame.draw.line(screen, pygame.Color('darkorange'), (x + cell_size, y + cell_size), (x, y + cell_size), 2)
         if self.walls['left']:
-            pygame.draw.line(sc, pygame.Color('darkorange'), (x, y + TILE), (x, y), 2)
-            
-    def check_cell(self, x, y):
-        find_index = lambda x, y: x + y * cols
-        if x < 0 or x > cols - 1 or y < 0 or y > rows - 1:
-            return False
-        return grid_cells[find_index(x, y)]
-    
-    def check_neighbors(self):
+            pygame.draw.line(screen, pygame.Color('darkorange'), (x, y + cell_size), (x, y), 2)
+
+    def check_neighbors(self, grid_cells, cols, rows):
         neighbors = []
-        top = self.check_cell(self.x, self.y - 1)
-        right = self.check_cell(self.x + 1, self.y)
-        bottom = self.check_cell(self.x, self.y + 1)
-        left = self.check_cell(self.x - 1, self.y)
-        if top and not top.visited:
-            neighbors.append(top)
-        if right and not right.visited:
-            neighbors.append(right)
-        if bottom and not bottom.visited:
-            neighbors.append(bottom)
-        if left and not left.visited:
-            neighbors.append(left)
-        return choice(neighbors) if neighbors else False
-    
+        find_index = lambda x, y: x + y * cols
+        directions = [
+            (0, -1),  # top
+            (1, 0),   # right
+            (0, 1),   # bottom
+            (-1, 0)   # left
+        ]
+        for dx, dy in directions:
+            nx, ny = self.x + dx, self.y + dy
+            if 0 <= nx < cols and 0 <= ny < rows:
+                neighbor = grid_cells[find_index(nx, ny)]
+                if not neighbor.visited:
+                    neighbors.append(neighbor)
+        return choice(neighbors) if neighbors else None
+
+
 def remove_walls(current, next):
     dx = current.x - next.x
-    if dx == 1:
+    dy = current.y - next.y
+    if dx == 1:  # left
         current.walls['left'] = False
         next.walls['right'] = False
-    elif dx == -1:
+    elif dx == -1:  # right
         current.walls['right'] = False
         next.walls['left'] = False
-    dy = current.y - next.y
-    if dy == 1:
+    if dy == 1:  # top
         current.walls['top'] = False
         next.walls['bottom'] = False
-    elif dy == -1:
+    elif dy == -1:  # bottom
         current.walls['bottom'] = False
         next.walls['top'] = False
 
-grid_cells = [Cell(col, row) for row in range(rows) for col in range(cols)]
-current_cell = grid_cells[0]
-stack = []
 
-# player init
-player = Player(0,0,TILE)
+class Map:
+    def __init__(self, cols, rows, cell_size):
+        self.cols = cols
+        self.rows = rows
+        self.cell_size = cell_size
+        self.grid_cells = [Cell(col, row) for row in range(rows) for col in range(cols)]
+        self.stack = []
+        self.current_cell = self.grid_cells[0]
 
-# exit init
-exit_x, exit_y = randrange(cols), randrange(rows)
-while exit_x == 0 and exit_y == 0:  # Ensure exit isn't the starting position
-    exit_x, exit_y = randrange(cols), randrange(rows)
+        # Player and hint setup
+        self.player = Player(0, 0, cell_size)
+        self.hint = Hint(cols - 1, rows - 1, cell_size)
+        self.finish_cell = None  # Titik finish yang akan ditentukan saat DFS selesai
 
-# hint init
-hint_x, hint_y = randrange(cols), randrange(rows)
-while (hint_x, hint_y) in [(0, 0), (exit_x, exit_y)]:  # Exclude player start and exit
-    hint_x, hint_y = randrange(cols), randrange(rows)
-hint = Hint(hint_x, hint_y, TILE)
+    def generate(self):
+        self.current_cell.visited = True
+        next_cell = self.current_cell.check_neighbors(self.grid_cells, self.cols, self.rows)
+        if next_cell:
+            next_cell.visited = True
+            self.stack.append(self.current_cell)
+            remove_walls(self.current_cell, next_cell)
+            self.current_cell = next_cell
+        elif self.stack:
+            self.current_cell = self.stack.pop()
 
-# enemy
-start_time = pygame.time.get_ticks()
-enemy_spawned = False
-enemy = None
+        # Setelah DFS selesai, tentukan titik finish di titik paling dalam DFS
+        if not self.stack:
+            self.finish_cell = self.current_cell
 
-while True:
-    sc.fill(pygame.Color('darkslategray'))
-    
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            exit()
-        elif event.type == pygame.KEYDOWN:
+    def handle_input(self, event):
+        if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_UP:
-                player.move("UP", grid_cells, cols)
-            elif event.key == pygame.K_RIGHT:
-                player.move("RIGHT", grid_cells, cols)
+                self.player.move("UP", self.grid_cells, self.cols)
             elif event.key == pygame.K_DOWN:
-                player.move("DOWN", grid_cells, cols)
+                self.player.move("DOWN", self.grid_cells, self.cols)
             elif event.key == pygame.K_LEFT:
-                player.move("LEFT", grid_cells, cols)
-            
-    [cell.draw() for cell in grid_cells]
-    current_cell.visited = True
-    current_cell.draw_current_cell()
+                self.player.move("LEFT", self.grid_cells, self.cols)
+            elif event.key == pygame.K_RIGHT:
+                self.player.move("RIGHT", self.grid_cells, self.cols)
+            elif event.key == pygame.K_h:
+                self.hint.activate(self, self.player.x, self.player.y)
 
-    pygame.draw.rect(sc, pygame.Color('green'), (exit_x * TILE + TILE // 4, exit_y * TILE + TILE // 4, TILE // 2, TILE // 2))
+    def check_collision_with_finish(self):
+        # Jika pemain berada di titik finish, akhiri permainan
+        if self.player.x == self.finish_cell.x and self.player.y == self.finish_cell.y:
+            pygame.quit()
+            quit()
 
-    # Draw hint item (drawn before player to ensure player is on top)
-    hint.draw(sc)
-    if hint.active:
-        for hx, hy in hint.path:
-            pygame.draw.rect(sc, pygame.Color(0, 255, 255, 128), (hx * TILE + TILE // 4, hy * TILE + TILE // 4, TILE // 2, TILE // 2))
+    def render(self, screen):
+        # Render cells
+        for cell in self.grid_cells:
+            cell.draw(screen, self.cell_size)
 
-    if player.x == hint_x and player.y == hint_y:
-        hint.activate(grid_cells, cols, rows, player.x, player.y, exit_x, exit_y)
-        hint_timer = pygame.time.get_ticks()
+        # Render player and hint
+        self.player.draw(screen)
+        self.hint.draw(screen)
 
-    # Draw the player last to ensure they are always on top
-    player.draw(sc)
-
-    # enemy logic
-    if not enemy_spawned and pygame.time.get_ticks() - start_time >= 15000:
-        enemy = Enemy(0, 0)  # Spawn the enemy at a random position
-        enemy_spawned = True
-
-    if enemy:
-        enemy.update((player.x, player.y), grid_cells, cols, rows)
-        enemy.draw(sc, TILE)
-
-        if enemy.x == player.x and enemy.y == player.y:
-            print("Game Over!")
-            pygame.time.wait(2000)  # Pause for 2 seconds
-            exit()
-
-    # Check if player reaches the exit
-    if player.x == exit_x and player.y == exit_y:
-        print("You Win!")
-        pygame.time.wait(2000)
-        exit()
-    
-    next_cell = current_cell.check_neighbors()
-    if next_cell:
-        next_cell.visited = True
-        stack.append(current_cell)
-        remove_walls(current_cell, next_cell)
-        current_cell = next_cell
-    elif stack:
-        current_cell = stack.pop()
-            
-    pygame.display.flip()
-    clock.tick(30)
+        # Render titik finish sebagai kotak hijau
+        if self.finish_cell:
+            fx, fy = self.finish_cell.x * self.cell_size, self.finish_cell.y * self.cell_size
+            pygame.draw.rect(screen, pygame.Color('green'), (fx, fy, self.cell_size, self.cell_size))
