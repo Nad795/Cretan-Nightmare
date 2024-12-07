@@ -25,7 +25,7 @@ class Hard:
 
         # Update posisi musuh
         self.enemy_start_time += dt
-        if self.enemy_start_time > 5000:  # Enemy starts moving after 15 seconds
+        if self.enemy_start_time > 3000:  # Enemy starts moving after 15 seconds
             player_position = (self.map.player.x, self.map.player.y)  # Player's position
             self.enemy.update(player_position, self.map.grid_cells, self.cols, self.rows, dt)
 
@@ -35,5 +35,5 @@ class Hard:
 
         # Render labirin, pemain, hint, dan musuh
         self.map.render(screen)
-        if self.enemy_start_time > 5000:
+        if self.enemy_start_time > 3000:
             self.enemy.draw(screen, self.cell_size)

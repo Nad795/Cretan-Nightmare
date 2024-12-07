@@ -71,7 +71,7 @@ class Enemy:
     def update(self, player_position, grid_cells, cols, rows, dt):
         # Increment move timer
         self.move_timer += dt
-        if self.move_timer < 200:  # Move only every 500 milliseconds
+        if self.move_timer < 85:  # Move only every 500 milliseconds
             return
 
         self.move_timer = 0  # Reset timer
