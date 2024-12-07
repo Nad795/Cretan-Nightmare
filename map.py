@@ -1,7 +1,14 @@
 import pygame
-from random import choice
+from random import choice, randrange
 from player import Player
 from hint import Hint
+from finish import Fin
+
+RES = WIDTH, HEIGHT = 800, 600
+TILE = 50
+cols, rows = WIDTH // TILE, HEIGHT // TILE
+
+sc = pygame.display.set_mode(RES)
 
 class Cell:
     def __init__(self, x, y):
@@ -57,7 +64,6 @@ def remove_walls(current, next):
         current.walls['bottom'] = False
         next.walls['top'] = False
 
-
 class Map:
     def __init__(self, cols, rows, cell_size):
         self.cols = cols
@@ -67,10 +73,20 @@ class Map:
         self.stack = []
         self.current_cell = self.grid_cells[0]
 
-        # Player and hint setup
+        # Player setup
         self.player = Player(0, 0, cell_size)
-        self.hint = Hint(cols - 1, rows - 1, cell_size)
-        self.finish_cell = None  # Titik finish yang akan ditentukan saat DFS selesai
+
+        # Finish setup
+        self.finish = Fin(cols, rows, self.grid_cells)
+
+        # Hint setup
+        self.hint = self.setup_hint()
+
+    def setup_hint(self):
+        while True:
+            hint_x, hint_y = randrange(self.cols), randrange(self.rows)
+            if (hint_x, hint_y) != (0, 0) and (hint_x, hint_y) != (self.finish.finish_cell.x, self.finish.finish_cell.y):  # Ensure hint is not at start or finish
+                return Hint(hint_x, hint_y, self.cell_size)
 
     def generate(self):
         self.current_cell.visited = True
@@ -83,9 +99,11 @@ class Map:
         elif self.stack:
             self.current_cell = self.stack.pop()
 
-        # Setelah DFS selesai, tentukan titik finish di titik paling dalam DFS
-        if not self.stack:
-            self.finish_cell = self.current_cell
+        if not self.stack and not self.finish.finish_cell:
+            self.finish.finish_cell = max(
+                self.grid_cells,
+                key=lambda cell: abs(cell.x - 0) + abs(cell.y - 0)
+            )
 
     def handle_input(self, event):
         if event.type == pygame.KEYDOWN:
@@ -97,25 +115,42 @@ class Map:
                 self.player.move("LEFT", self.grid_cells, self.cols)
             elif event.key == pygame.K_RIGHT:
                 self.player.move("RIGHT", self.grid_cells, self.cols)
-            elif event.key == pygame.K_h:
-                self.hint.activate(self, self.player.x, self.player.y)
-
-    def check_collision_with_finish(self):
-        # Jika pemain berada di titik finish, akhiri permainan
-        if self.player.x == self.finish_cell.x and self.player.y == self.finish_cell.y:
-            pygame.quit()
-            quit()
 
     def render(self, screen):
-        # Render cells
         for cell in self.grid_cells:
             cell.draw(screen, self.cell_size)
 
-        # Render player and hint
-        self.player.draw(screen)
+        # Render the hint
         self.hint.draw(screen)
+        if self.hint.active:
+            for hx, hy in self.hint.path:
+                pygame.draw.rect(
+                    screen, 
+                    pygame.Color(0, 255, 255, 128), 
+                    (hx * TILE + TILE // 4, hy * TILE + TILE // 4, TILE // 2, TILE // 2)
+                )
 
-        # Render titik finish sebagai kotak hijau
-        if self.finish_cell:
-            fx, fy = self.finish_cell.x * self.cell_size, self.finish_cell.y * self.cell_size
-            pygame.draw.rect(screen, pygame.Color('green'), (fx, fy, self.cell_size, self.cell_size))
+        # Render the finish
+        if self.finish.finish_cell:
+            ex, ey = self.finish.finish_cell.x * self.cell_size, self.finish.finish_cell.y * self.cell_size
+            pygame.draw.rect(screen, pygame.Color('green'), (ex, ey, self.cell_size, self.cell_size))
+
+        # Activate the hint if the player reaches it
+        if self.player.x == self.hint.x and self.player.y == self.hint.y:
+            self.hint.activate(
+                self.grid_cells, self.cols, self.rows, 
+                self.player.x, self.player.y, 
+                self.finish.finish_cell.x, self.finish.finish_cell.y
+            )
+
+        # Render the player
+        self.player.draw(screen)
+
+    def check_collision_with_finish(self):
+        player_cell_x = self.player.x // self.cell_size  # Convert pixel position to grid cell index
+        player_cell_y = self.player.y // self.cell_size  # Convert pixel position to grid cell index
+
+        if player_cell_x == self.finish.finish_cell.x and player_cell_y == self.finish.finish_cell.y:
+            print("Player reached the finish!")
+            pygame.quit()
+            quit()
