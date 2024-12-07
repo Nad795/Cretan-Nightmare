@@ -10,6 +10,10 @@ cols, rows = WIDTH // TILE, HEIGHT // TILE
 
 sc = pygame.display.set_mode(RES)
 
+clock = pygame.time.Clock()
+hint_timer = 0
+hint_active_duration = 5000 
+
 class Cell:
     def __init__(self, x, y):
         self.x, self.y = x, y
@@ -81,6 +85,7 @@ class Map:
 
         # Hint setup
         self.hint = self.setup_hint()
+        self.hint_active_time = None
 
     def setup_hint(self):
         while True:
@@ -135,13 +140,17 @@ class Map:
             ex, ey = self.finish.finish_cell.x * self.cell_size, self.finish.finish_cell.y * self.cell_size
             pygame.draw.rect(screen, pygame.Color('green'), (ex, ey, self.cell_size, self.cell_size))
 
-        # Activate the hint if the player reaches it
+        # Render the hint
         if self.player.x == self.hint.x and self.player.y == self.hint.y:
             self.hint.activate(
                 self.grid_cells, self.cols, self.rows, 
                 self.player.x, self.player.y, 
                 self.finish.finish_cell.x, self.finish.finish_cell.y
             )
+            self.hint_active_time = pygame.time.get_ticks()
+        
+        if self.hint_active_time and pygame.time.get_ticks() - self.hint_active_time > hint_active_duration:
+            self.hint.deactivate()
 
         # Render the player
         self.player.draw(screen)
