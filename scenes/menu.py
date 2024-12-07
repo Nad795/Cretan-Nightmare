@@ -29,7 +29,7 @@ class Menu:
                     
         return None
     
-    def update(self):
+    def update(self, dt):
         pass
     
     def render(self, screen):

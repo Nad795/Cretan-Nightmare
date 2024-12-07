@@ -14,6 +14,7 @@ current_scene = Menu()
 
 running = True
 while running:
+    dt = clock.tick(FPS)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -22,7 +23,7 @@ while running:
             if next_scene:
                 current_scene = next_scene
 
-    current_scene.update()
+    current_scene.update(dt)
     current_scene.render(screen)
     
     ui.update_display()

@@ -14,7 +14,7 @@ class Easy:
         # Meneruskan event ke Map
         self.map.handle_input(event)
 
-    def update(self):
+    def update(self, dt):
         # Generate labirin jika belum selesai
         if not self.map_generated:
             self.map.generate()

@@ -65,12 +65,19 @@ class Enemy:
     def __init__(self, x, y):
         self.x = x
         self.y = y
-        self.speed = 0.1  # Kecepatan musuh dalam tiles per frame
+        self.move_timer = 0  # Timer for movement
         self.path = []  # Jalur yang akan dilalui musuh
-    
-    def update(self, player_position, grid_cells, cols, rows):
+
+    def update(self, player_position, grid_cells, cols, rows, dt):
+        # Increment move timer
+        self.move_timer += dt
+        if self.move_timer < 200:  # Move only every 500 milliseconds
+            return
+
+        self.move_timer = 0  # Reset timer
+        
         if not self.path or (self.x, self.y) == self.path[0]:
-            # Hitung jalur baru jika tidak ada jalur atau sudah mencapai titik awal jalur
+            # Calculate a new path if none exists or the current target is reached
             self.path = a_star((self.x, self.y), player_position, grid_cells, cols, rows)
         
         if self.path:
