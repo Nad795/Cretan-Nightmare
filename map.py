@@ -8,9 +8,6 @@ RES = WIDTH, HEIGHT = 800, 600
 TILE = 50
 cols, rows = WIDTH // TILE, HEIGHT // TILE
 
-sc = pygame.display.set_mode(RES)
-
-clock = pygame.time.Clock()
 hint_timer = 0
 hint_active_duration = 5000 
 

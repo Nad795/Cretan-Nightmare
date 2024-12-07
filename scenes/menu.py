@@ -17,9 +17,12 @@ class Menu:
                 if ui.button_hover(mouse_pos, 250, 175, 300, 50):
                     print('Easy selected')
                     return Easy()
-                if ui.button_hover(mouse_pos, 250, 325, 300, 50):
+                if ui.button_hover(mouse_pos, 250, 250, 300, 50):
                     print('Hard selected')
                     return Hard()
+                if ui.button_hover(mouse_pos, 250, 325, 300, 50):
+                    print('Back selected')
+                    self.show_panel = False
             else:
                 if ui.button_hover(mouse_pos, 300, 200, 200, 50):
                     self.show_panel = True
@@ -37,7 +40,8 @@ class Menu:
         
         if self.show_panel:
             ui.draw_button('Easy', 250, 175, 300, 50, screen, self.font)
-            ui.draw_button('Hard', 250, 325, 300, 50, screen, self.font)
+            ui.draw_button('Hard', 250, 250, 300, 50, screen, self.font)
+            ui.draw_button('Back', 250, 325, 300, 50, screen, self.font)
         else:
             ui.draw_button('Play', 300, 200, 200, 50, screen, self.font)
             ui.draw_button('Quit', 300, 300, 200, 50, screen, self.font)
