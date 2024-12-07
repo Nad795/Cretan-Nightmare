@@ -1,10 +1,10 @@
 import pygame
 
-class Win:
+class GameOver:
     def __init__(self):
         self.font = pygame.font.Font(None, 74)
-        self.message = "You Win!"
-        self.color = pygame.Color('green')
+        self.message = "Game Over!"
+        self.color = pygame.Color('red')
 
     def handle_event(self, event):
         if event.type == pygame.KEYDOWN:

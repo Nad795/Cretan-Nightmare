@@ -1,6 +1,8 @@
 import pygame
 from map import Map
-from enemy import Enemy  # Mengimpor kelas Enemy dari file enemy.py
+from enemy import Enemy
+from player import Player
+from scenes.game_over import GameOver
 
 class Hard:
     def __init__(self):
@@ -28,6 +30,9 @@ class Hard:
         if self.enemy_start_time > 3000:  # Enemy starts moving after 15 seconds
             player_position = (self.map.player.x, self.map.player.y)  # Player's position
             self.enemy.update(player_position, self.map.grid_cells, self.cols, self.rows, dt)
+            if self.player.x == self.enemy.x and self.player.y == self.enemy.y:
+                print("GAME OVER")
+                return GameOver()
 
     def render(self, screen):
         # Mengisi layar dengan warna dasar

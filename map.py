@@ -3,6 +3,7 @@ from random import choice, randrange
 from player import Player
 from hint import Hint
 from finish import Fin
+from scenes.win import Win
 
 RES = WIDTH, HEIGHT = 800, 600
 TILE = 50
@@ -134,8 +135,8 @@ class Map:
 
         # Render the finish
         if self.finish.finish_cell:
-            ex, ey = self.finish.finish_cell.x * self.cell_size, self.finish.finish_cell.y * self.cell_size
-            pygame.draw.rect(screen, pygame.Color('green'), (ex, ey, self.cell_size, self.cell_size))
+            ex, ey = self.finish.finish_cell.x * self.cell_size + self.cell_size // 4, self.finish.finish_cell.y * self.cell_size + self.cell_size // 4
+            pygame.draw.rect(screen, pygame.Color('green'), (ex, ey, self.cell_size // 2, self.cell_size // 2))
 
         # Render the hint
         if self.player.x == self.hint.x and self.player.y == self.hint.y:
@@ -158,5 +159,4 @@ class Map:
 
         if player_cell_x == self.finish.finish_cell.x and player_cell_y == self.finish.finish_cell.y:
             print("Player reached the finish!")
-            pygame.quit()
-            quit()
+            return Win()
