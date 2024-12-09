@@ -2,9 +2,11 @@ import pygame
 
 PINK = (255, 204, 234)
 BLUE = (191, 236, 255)
-YELLOW = (255, 220, 150)
+YELLOW = (255, 187, 70)
 WHITE = (250, 250, 250)
 BLACK = (5, 5, 5)
+NAVY = (0, 54, 119)
+GOLD = (255, 165, 0)
 
 def initialize_screen(width, height, title):
     screen = pygame.display.set_mode((width, height))
@@ -20,7 +22,7 @@ def create_clock():
 def set_fps(clock, fps):
     clock.tick(fps)
 
-def draw_button(text, x, y, width, height, screen, font, color=WHITE, border_color=BLACK, border_thickness=2):
+def draw_button(text, x, y, width, height, screen, font, color=YELLOW, border_color=BLACK, border_thickness=2):
     mouse_pos = pygame.mouse.get_pos()
     is_hovered = button_hover(mouse_pos, x, y, width, height)
 
@@ -30,7 +32,7 @@ def draw_button(text, x, y, width, height, screen, font, color=WHITE, border_col
         new_height = int(height * scale_factor)
         new_x = x - (new_width - width) // 2
         new_y = y - (new_height - height) // 2
-        color = YELLOW
+        color = GOLD
         new_font_size = int(font.get_height() * scale_factor)  
         font = create_font(new_font_size)  
     else:

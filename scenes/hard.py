@@ -9,7 +9,7 @@ class Hard:
         self.cell_size = 50
         self.cols, self.rows = 16, 12
         self.map = Map(self.cols, self.rows, self.cell_size)
-        self.enemy = Enemy(0, 0)
+        self.enemy = Enemy(0, 0, self.cell_size, 'assets/enemy-icon.png')
         self.map_generated = False
         self.enemy_start_time = 0
         self.game_over = False

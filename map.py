@@ -76,10 +76,15 @@ class Map:
         self.current_cell = self.grid_cells[0]
 
         # Player setup
-        self.player = Player(0, 0, cell_size)
+        self.player = Player(0, 0, self.cell_size, 'assets/player-icon.png')
 
         # Finish setup
         self.finish = Fin(cols, rows, self.grid_cells)
+
+        # Load the finish icon
+        self.finish_icon = pygame.image.load('assets/finish-icon.png')
+        # Optionally resize the icon to fit within a cell
+        self.finish_icon = pygame.transform.scale(self.finish_icon, (self.cell_size // 1.5, self.cell_size // 1.5))
 
         # Hint setup
         self.hint = self.setup_hint()
@@ -127,16 +132,18 @@ class Map:
         self.hint.draw(screen)
         if self.hint.active:
             for hx, hy in self.hint.path:
-                pygame.draw.rect(
-                    screen, 
-                    pygame.Color(0, 255, 255, 128), 
-                    (hx * TILE + TILE // 4, hy * TILE + TILE // 4, TILE // 2, TILE // 2)
+                pygame.draw.circle(
+                    screen,
+                    pygame.Color(255, 187, 70, 255),  # Warna kuning dengan transparansi
+                    (hx * TILE + TILE // 2, hy * TILE + TILE // 2),  # Titik pusat lingkaran
+                    TILE // 8  # Radius lingkaran, sesuaikan sesuai kebutuhan
                 )
 
-        # Render the finish
+        # Render the finish (with icon)
         if self.finish.finish_cell:
             ex, ey = self.finish.finish_cell.x * self.cell_size + self.cell_size // 4, self.finish.finish_cell.y * self.cell_size + self.cell_size // 4
-            pygame.draw.rect(screen, pygame.Color('green'), (ex, ey, self.cell_size // 2, self.cell_size // 2))
+            # Blit the finish icon instead of a rectangle
+            screen.blit(self.finish_icon, (ex, ey))
 
         # Render the hint
         if self.player.x == self.hint.x and self.player.y == self.hint.y:
@@ -152,6 +159,7 @@ class Map:
 
         # Render the player
         self.player.draw(screen)
+        
 
     def check_collision_with_finish(self):
         player_cell_x = self.player.x // self.cell_size  # Convert pixel position to grid cell index

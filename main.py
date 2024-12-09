@@ -5,7 +5,10 @@ import ui
 
 pygame.init()
 
-screen = ui.initialize_screen(800, 600, 'Cretan Nightmare')
+screen = ui.initialize_screen(800, 600, 'The Deadliners')
+
+icon = pygame.image.load('assets/logo-icon.png') 
+pygame.display.set_icon(icon)
 
 clock = ui.create_clock()
 FPS = 60

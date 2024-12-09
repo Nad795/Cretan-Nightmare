@@ -62,10 +62,19 @@ def a_star(start, goal, grid_cells, cols, rows):
 
 # Kelas untuk Enemy
 class Enemy:
-    def __init__(self, x, y):
+    def __init__(self, x, y, tile_size, image_path='assets/enemy-icon.png'):
         self.x = x
         self.y = y
-        self.move_timer = 0  # Timer for movement
+        self.tile_size = tile_size
+        self.image = pygame.image.load(image_path).convert_alpha()
+        
+        # Mengatur ukuran gambar agar lebih kecil dari ukuran tile (misalnya 70% dari tile_size)
+        scale_factor = 0.7
+        new_width = int(tile_size * scale_factor)
+        new_height = int(tile_size * scale_factor)
+        self.image = pygame.transform.scale(self.image, (new_width, new_height))
+
+        self.move_timer = 0  # Timer untuk pergerakan
         self.path = []  # Jalur yang akan dilalui musuh
 
     def update(self, player_position, grid_cells, cols, rows, dt):
@@ -77,7 +86,7 @@ class Enemy:
         self.move_timer = 0  # Reset timer
         
         if not self.path or (self.x, self.y) == self.path[0]:
-            # Calculate a new path if none exists or the current target is reached
+            # Hitung jalur baru jika tidak ada atau target saat ini sudah tercapai
             self.path = a_star((self.x, self.y), player_position, grid_cells, cols, rows)
         
         if self.path:
@@ -85,6 +94,8 @@ class Enemy:
             self.x, self.y = next_tile
 
     def draw(self, screen, tile_size):
-        # Menggambar musuh sebagai lingkaran merah di grid
-        ex, ey = self.x * tile_size + tile_size // 2, self.y * tile_size + tile_size // 2
-        pygame.draw.circle(screen, pygame.Color('red'), (ex, ey), tile_size // 4)
+        # Hitung posisi agar ikon berada di tengah tile
+        rect = self.image.get_rect()
+        rect.topleft = (self.x * tile_size + (tile_size - rect.width) // 2,
+                        self.y * tile_size + (tile_size - rect.height) // 2)
+        screen.blit(self.image, rect.topleft)

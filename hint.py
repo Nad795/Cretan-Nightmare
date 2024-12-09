@@ -9,18 +9,32 @@ class Hint:
         self.path = []
         self.activation_time = 0  # Time when the hint is activated
 
-    def draw(self, screen):
-        # Draw the hint at the current position
-        hx, hy = self.x * self.tile_size + self.tile_size // 4, self.y * self.tile_size + self.tile_size // 4
-        pygame.draw.rect(screen, pygame.Color('yellow'), (hx, hy, self.tile_size // 2, self.tile_size // 2))
+        # Load the hint icon
+        self.hint_icon = pygame.image.load('assets/hint-icon.png')
+        # Scale the hint icon to fit within the tile
+        self.hint_icon = pygame.transform.scale(self.hint_icon, (tile_size // 1.2, tile_size // 1.2))
 
-        # If the hint is active, draw the path
+
+    def draw(self, screen):
+        # Draw the hint icon at the current position
+        hx = self.x * self.tile_size + (self.tile_size - self.hint_icon.get_width()) // 2
+        hy = self.y * self.tile_size + (self.tile_size - self.hint_icon.get_height()) // 2
+        screen.blit(self.hint_icon, (hx, hy))
+
+        # If the hint is active, draw the path as circles
         if self.active:
             for hx, hy in self.path:
-                pygame.draw.rect(
+                # Calculate the position for the center of the circle
+                circle_x = hx * self.tile_size + self.tile_size // 2
+                circle_y = hy * self.tile_size + self.tile_size // 2
+                # Set the radius of the circle to be smaller
+                radius = self.tile_size // 8  # Adjust this value as needed
+
+                pygame.draw.circle(
                     screen,
-                    pygame.Color(0, 255, 255, 128),
-                    (hx * self.tile_size + self.tile_size // 4, hy * self.tile_size + self.tile_size // 4, self.tile_size // 2, self.tile_size // 2)
+                    pygame.Color(255, 187, 70, 255),  # Yellow color with transparency
+                    (circle_x, circle_y),
+                    radius
                 )
 
     def bfs(self, grid_cells, cols, rows, start_x, start_y, exit_x, exit_y):
@@ -40,7 +54,7 @@ class Hint:
                     path.append((x, y))
                     x, y = parent[(x, y)]
                 path.reverse()
-                return path[:10]  # Limit path to 10 steps
+                return path[:15]  # Limit path to 15 steps
             current_cell = grid_cells[x + y * cols]
             for dx, dy in directions:
                 nx, ny = x + dx, y + dy
