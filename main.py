@@ -2,6 +2,7 @@ import pygame
 import sys
 from scenes.menu import Menu
 import ui
+from pygame import mixer
 
 pygame.init()
 
@@ -12,6 +13,9 @@ pygame.display.set_icon(icon)
 
 clock = ui.create_clock()
 FPS = 60
+
+mixer.music.load("assets/bg-music.mp3")
+mixer.music.play(-1)
 
 current_scene = Menu()
 
